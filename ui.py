@@ -74,6 +74,26 @@ def render_abrechnung_page():
     if karte:
         st.metric("Kartenguthaben", f"{karte['guthaben']:.2f} €")
         st.caption(f"Diese Karte wurde bezahlt von: **{karte.get('bezahlt_von', 'Unbekannt')}**")
+        
+        # Funktion zur nachträglichen Korrektur des Karten-Zahlers bei Tippfehlern
+        with st.expander("✏️ Falschen Zahler eingetragen? Name korrigieren"):
+            aktueller_zahler = karte.get("bezahlt_von")
+            default_index = cfg.SPIELER.index(aktueller_zahler) if aktueller_zahler in cfg.SPIELER else 0
+            
+            neuer_zahler = st.selectbox(
+                "Wer hat die Karte wirklich bezahlt?", 
+                cfg.SPIELER, 
+                index=default_index, 
+                key="correct_card_payer"
+            )
+            
+            if st.button("Zahler aktualisieren", key="btn_correct_payer"):
+                if neuer_zahler == aktueller_zahler:
+                    st.info("Dieser Spieler ist bereits als Zahler eingetragen.")
+                else:
+                    db.update_karte_zahler(karte["id"], neuer_zahler)
+                    st.success(f"Zahler erfolgreich auf **{neuer_zahler}** geändert!")
+                    st.rerun()
     else:
         st.warning("Keine aktive Karte vorhanden. Bitte neue Karte starten.")
 

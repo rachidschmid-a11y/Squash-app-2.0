@@ -75,13 +75,17 @@ def get_spielergebnisse():
 def save_spielergebnis(data: dict):
     try:
         supabase.table("spielergebnisse").insert(data).execute()
+        return True
     except Exception as e:
-        st.error("Fehler beim Speichern des Spielergebnisses")
+        st.error("Fehler beim Speichern des Spielergebnisses in Supabase:")
         st.write(e)
+        return False
 
 def delete_spielergebnis(result_id: int):
     try:
         supabase.table("spielergebnisse").delete().eq("id", result_id).execute()
+        return True
     except Exception as e:
         st.error("Fehler beim Löschen")
         st.write(e)
+        return False

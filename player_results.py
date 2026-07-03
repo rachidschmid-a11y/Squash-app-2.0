@@ -69,10 +69,26 @@ def render_player_results_page():
     st.dataframe(df, use_container_width=True)
 
     st.subheader("🗑 Ergebnis löschen")
-    ids = df["id"].tolist()
-    delete_id = st.selectbox("Spiel auswählen (ID)", ids, key="del_res_id")
+    
+    # Komfortable Text-Optionen für das Dropdown-Menü bauen
+    optionen = {}
+    for r in daten:
+        try:
+            datum_formatiert = pd.to_datetime(r["gespielt_am"]).strftime('%d.%m.%Y')
+        except:
+            datum_formatiert = str(r["gespielt_am"])
+        text = f"ID {r['id']}: [{datum_formatiert}] {r['gewinner']} vs. {r['verlierer']} ({r['satz_gewinner']}:{r['satz_verlierer']})"
+        optionen[r["id"]] = text
 
-    if st.button("Ergebnis Löschen"):
+    # Dropdown nutzt nun die formatierten Texte statt roher IDs
+    delete_id = st.selectbox(
+        "Spiel auswählen",
+        options=list(optionen.keys()),
+        format_func=lambda x: optionen[x],
+        key="del_res_id"
+    )
+
+    if st.button("Ergebnis Löschen", type="secondary"):
         db.delete_spielergebnis(delete_id)
-        st.success("Gelöscht")
+        st.success("Ergebnis erfolgreich gelöscht!")
         st.rerun()

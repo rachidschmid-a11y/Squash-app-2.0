@@ -69,6 +69,14 @@ def update_karte_zahler(karte_id, neuer_zahler):
         st.error(f"Fehler beim Aktualisieren des Zahlers in der Datenbank: {e}")
         return None
 
+def delete_karte(karte_id):
+    """Löscht eine aktive Karte vollständig aus der Datenbank (Storno)."""
+    try:
+        return supabase.table("karte").delete().eq("id", karte_id).execute()
+    except Exception as e:
+        st.error(f"Fehler beim Löschen der Karte in der Datenbank: {e}")
+        return None
+
 # --- SPORT-QUERIES (ex Auswertung.py) ---
 
 def get_spielergebnisse():

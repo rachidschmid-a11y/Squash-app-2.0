@@ -105,7 +105,8 @@ def render_abrechnung_page():
         st.info("Noch keine Spiele auf der aktuellen Karte vorhanden")
 
     st.divider()
-    with st.expander("Fehlerhaften Eintrag korrigieren / löschen"):
+    with st.expander("🗑️ Fehlerhaften Eintrag oder Karte löschen"):
+        st.markdown("#### 🏸 Spiel-Session löschen")
         if spiele:
             df_raw = pd.DataFrame(spiele)
             optionen = {row["id"]: f"ID {row['id']} | {pd.to_datetime(row['gespielt_am']).strftime('%d.%m.%Y')} | {row['spieler']} | {row['kosten']:.2f} €" for _, row in df_raw.iterrows()}
@@ -120,6 +121,17 @@ def render_abrechnung_page():
                 st.rerun()
         else:
             st.info("Keine aktuellen Spiele vorhanden, die gelöscht werden könnten.")
+            
+        st.divider()
+        st.markdown("#### ⚠️ Aktive Karte stornieren")
+        if karte:
+            st.warning("Achtung: Das Löschen der aktiven Karte setzt das aktuelle Kartenguthaben zurück. Offene Sessions bleiben als 'nicht abgerechnet' bestehen und zählen für die nächste aktivierte Karte.")
+            if st.button("🔴 Aktive Karte unwiderruflich löschen", key="btn_delete_active_card"):
+                db.delete_karte(karte["id"])
+                st.success("Die aktive Karte wurde erfolgreich gelöscht!")
+                st.rerun()
+        else:
+            st.info("Keine aktive Karte vorhanden, die gelöscht werden könnte.")
 
     st.divider()
     st.subheader("Kostenstatistik")

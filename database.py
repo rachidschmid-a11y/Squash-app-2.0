@@ -61,6 +61,14 @@ def insert_karte(data: dict):
 def delete_spiel_by_id(spiel_id):
     return supabase.table("spiele").delete().eq("id", spiel_id).execute()
 
+def update_karte_zahler(karte_id, neuer_zahler):
+    """Aktualisiert den Zahler einer bestehenden Karte im Falle eines Tippfehlers."""
+    try:
+        return supabase.table("karte").update({"bezahlt_von": neuer_zahler}).eq("id", karte_id).execute()
+    except Exception as e:
+        st.error(f"Fehler beim Aktualisieren des Zahlers in der Datenbank: {e}")
+        return None
+
 # --- SPORT-QUERIES (ex Auswertung.py) ---
 
 def get_spielergebnisse():

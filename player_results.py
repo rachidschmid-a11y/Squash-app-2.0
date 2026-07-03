@@ -43,19 +43,20 @@ def render_player_results_page():
             st.error("Unentschieden ist nicht erlaubt")
             return
 
+        # eingetragen_am weggelassen, da die Datenbank das über DEFAULT NOW() selbst regelt
         data = {
             "gespielt_am": str(datum),
             "gewinner": gewinner,
             "verlierer": spieler2 if gewinner == spieler1 else spieler1,
             "satz_gewinner": punkte1 if gewinner == spieler1 else punkte2,
             "satz_verlierer": punkte2 if gewinner == spieler1 else punkte1,
-            "eingetragen_von": eingetragen_von,
-            "eingetragen_am": str(datetime.now())
+            "eingetragen_von": eingetragen_von
         }
 
-        db.save_spielergebnis(data)
-        st.success("Ergebnis gespeichert!")
-        st.rerun()
+        # Nur bei echtem Erfolg Erfolgsmeldung zeigen und neu laden
+        if db.save_spielergebnis(data):
+            st.success("Ergebnis gespeichert!")
+            st.rerun()
 
     st.divider()
     st.subheader("📋 Alle Ergebnisse")
@@ -70,7 +71,6 @@ def render_player_results_page():
 
     st.subheader("🗑 Ergebnis löschen")
     
-    # Komfortable Text-Optionen für das Dropdown-Menü bauen
     optionen = {}
     for r in daten:
         try:
@@ -80,7 +80,6 @@ def render_player_results_page():
         text = f"ID {r['id']}: [{datum_formatiert}] {r['gewinner']} vs. {r['verlierer']} ({r['satz_gewinner']}:{r['satz_verlierer']})"
         optionen[r["id"]] = text
 
-    # Dropdown nutzt nun die formatierten Texte statt roher IDs
     delete_id = st.selectbox(
         "Spiel auswählen",
         options=list(optionen.keys()),
@@ -89,6 +88,6 @@ def render_player_results_page():
     )
 
     if st.button("Ergebnis Löschen", type="secondary"):
-        db.delete_spielergebnis(delete_id)
-        st.success("Ergebnis erfolgreich gelöscht!")
-        st.rerun()
+        if db.delete_spielergebnis(delete_id):
+            st.success("Ergebnis erfolgreich gelöscht!")
+            st.rerun()
